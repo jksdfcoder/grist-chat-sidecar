@@ -1,0 +1,29 @@
+[project]
+name = "sih-ver2-sidecar"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi",
+    "uvicorn[standard]",
+    "pydantic-settings",
+    "httpx",
+    "openai",
+    "sqlglot",
+    "itsdangerous",
+    "psycopg2-binary",
+    "jinja2",
+    "azure-storage-file-datalake",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-asyncio",
+]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["app*"]

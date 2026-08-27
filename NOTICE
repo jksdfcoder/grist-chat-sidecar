@@ -1,0 +1,4 @@
+Grist
+  This project runs the unmodified Docker image gristlabs/grist
+  (https://github.com/gristlabs/grist-core), Copyright Grist Labs,
+  licensed under the Apache License, Version 2.0.

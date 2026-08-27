@@ -1,0 +1,9 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Submit</title>
+<div data-testid="diff"></div>
+{% if role == "manager" %}
+<button data-testid="commit">Commit</button>
+<span data-testid="commit-ok" hidden>ok</span>
+{% endif %}
+<script src="/static/app.js?v=3"></script>

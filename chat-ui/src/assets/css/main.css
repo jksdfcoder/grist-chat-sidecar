@@ -1,0 +1,44 @@
+@import "tailwindcss";
+@import "@nuxt/ui";
+
+html,
+body,
+#app {
+  height: 100dvh;
+  overflow: hidden;
+}
+
+html {
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+#app {
+  container-type: inline-size;
+  font-size: clamp(0.9375rem, 2.2cqi + 0.75rem, 1.0625rem);
+}
+
+body {
+  margin: 0;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@keyframes sih-plus-1 {
+  0% {
+    opacity: 0;
+    transform: translate(0, 4px) scale(0.55);
+  }
+  16% {
+    opacity: 1;
+    transform: translate(2px, -2px) scale(1.2);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(8px, -22px) scale(1);
+  }
+}
+
+.sih-plus-1 {
+  animation: sih-plus-1 0.9s ease-out forwards;
+}
