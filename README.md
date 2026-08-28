@@ -2,6 +2,8 @@
 
 Nginx + unmodified [Grist](https://github.com/gristlabs/grist-core) (`gristlabs/grist`, Apache 2.0) + a FastAPI sidecar. Chat is a same-origin Grist custom widget at `/chat`.
 
+Public static fixture (sheet + chat, fictional rows, no keys): https://jksdfcoder.github.io/grist-chat-sidecar/
+
 First visit mints a **guest** cookie. There is no OAuth. Anyone who can reach the port can edit the demo sheet.
 
 Do not put API keys in git. Chat, SQL, and Azure upload stay unconfigured until you fill `.env`.
@@ -39,7 +41,7 @@ Chat is a **custom widget on a Grist page**, same origin.
 2. Add New → Add Widget to Page → Custom. Data: that table. **Select By**: that table.
 3. Custom URL: `http://127.0.0.1:18080/chat`. Grant **full document access**.
 4. Ask chat for a lookup. SQL should contain `{{Email}}` (or whatever columns exist).
-5. Select rows, **执行 SQL**, then **写入 Grist**.
+5. Select rows, run SQL, then write to Grist.
 
 ## Tests
 

@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Static demo of a Grist sheet beside a same-origin chat widget. Fictional rows. No API keys.">
+  <title>Grist chat sidecar</title>
+  <style>
+    :root {
+      --bg: #f4f4f5;
+      --sheet: #ffffff;
+      --ink: #18181b;
+      --muted: #3f3f46;
+      --line: #d4d4d8;
+      --select: #d1fae5;
+      --select-ink: #065f46;
+      --chat: #18181b;
+      --chat-ink: #fafafa;
+      --chat-muted: #a1a1aa;
+      --accent: #059669;
+      --bubble: #27272a;
+      --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+      --mono: ui-monospace, "SF Mono", Menlo, monospace;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100dvh; }
+    body {
+      font-family: var(--sans);
+      color: var(--ink);
+      background: var(--bg);
+    }
+    .skip {
+      position: absolute;
+      left: -999px;
+      top: 0;
+    }
+    .skip:focus {
+      left: 0.5rem;
+      top: 0.5rem;
+      z-index: 2;
+      padding: 0.5rem 0.75rem;
+      background: var(--sheet);
+    }
+    .vh {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+    }
+    .banner {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem 1rem;
+      align-items: baseline;
+      padding: 0.7rem 1rem;
+      border-bottom: 1px solid var(--line);
+      background: var(--sheet);
+    }
+    .banner a { margin-left: auto; color: var(--accent); }
+    .stage {
+      display: grid;
+      grid-template-columns: minmax(20rem, 1fr) minmax(24rem, 1.15fr);
+      min-height: calc(100dvh - 3rem);
+    }
+    .banner h1 {
+      margin: 0;
+      font-size: 0.95rem;
+      font-weight: 650;
+    }
+    .banner p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.85rem;
+      max-width: 52ch;
+    }
+    .stage {
+      display: grid;
+      grid-template-columns: minmax(16rem, 0.9fr) minmax(18rem, 1.1fr);
+      min-height: calc(100dvh - 3rem);
+    }
+    .sheet {
+      padding: 0.85rem;
+      background: var(--sheet);
+      border-right: 1px solid var(--line);
+    }
+    .sheet h2 {
+      margin: 0 0 0.65rem;
+      font-size: 0.8rem;
+      font-weight: 650;
+      color: var(--muted);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+    th, td {
+      text-align: left;
+      padding: 0.55rem 0.65rem;
+      border-bottom: 1px solid var(--line);
+    }
+    th { font-size: 0.75rem; color: var(--muted); font-weight: 650; }
+    tbody tr {
+      cursor: pointer;
+    }
+    tbody tr:focus {
+      outline: 2px solid var(--accent);
+      outline-offset: -2px;
+    }
+    tbody tr[aria-selected="true"] td {
+      background: var(--select);
+      color: var(--select-ink);
+    }
+    .chat {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      background: var(--chat);
+      color: var(--chat-ink);
+    }
+    .chat-log {
+      flex: 1;
+      overflow: auto;
+      padding: 1rem 1rem 0.5rem;
+    }
+    .msg {
+      max-width: 36ch;
+      margin: 0 0 0.85rem auto;
+      padding: 0.55rem 0.75rem;
+      border-radius: 14px 14px 4px 14px;
+      background: var(--bubble);
+    }
+    .card {
+      margin: 0 0 1rem;
+      padding: 0.75rem;
+      border: 1px solid #3f3f46;
+      border-radius: 12px;
+      background: #09090b;
+    }
+    .card h3 {
+      margin: 0 0 0.35rem;
+      font-size: 0.85rem;
+      font-weight: 650;
+    }
+    .card .meta {
+      margin: 0 0 0.55rem;
+      font-size: 0.75rem;
+      color: var(--chat-muted);
+    }
+    .card pre {
+      margin: 0 0 0.65rem;
+      padding: 0.55rem 0.65rem;
+      overflow: auto;
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      line-height: 1.4;
+      background: #27272a;
+      border-radius: 8px;
+      white-space: pre-wrap;
+    }
+    .card table { color: var(--chat-ink); }
+    .card th, .card td { border-color: #3f3f46; }
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+    .actions button {
+      min-height: 44px;
+      padding: 0 0.8rem;
+      border: 0;
+      border-radius: 8px;
+      background: #27272a;
+      color: var(--chat-ink);
+      font: inherit;
+    }
+    .actions button.ok { background: var(--accent); color: #ecfdf5; }
+    .actions button[disabled] { opacity: 0.55; }
+    .prompt {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+      padding: 0.75rem 1rem 1rem;
+      border-top: 1px solid #27272a;
+    }
+    .prompt p {
+      margin: 0;
+      flex: 1;
+      padding: 0.7rem 0.85rem;
+      border-radius: 12px;
+      background: var(--bubble);
+      color: var(--chat-muted);
+      font-size: 0.9rem;
+    }
+    @media (max-width: 767px) {
+      .stage { grid-template-columns: 1fr; min-height: 0; }
+      .sheet { border-right: 0; border-bottom: 1px solid var(--line); }
+      .chat { min-height: 70dvh; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip" href="#sheet">Skip to sheet</a>
+  <header class="banner">
+    <h1>Grist chat sidecar</h1>
+    <p>Static fixture. Chat sits beside the sheet. Models and live SQL need docker compose in the repo.</p>
+    <p><a href="https://github.com/jksdfcoder/grist-chat-sidecar">Source</a></p>
+  </header>
+  <div class="stage">
+    <section class="sheet" id="sheet" aria-labelledby="sheet-h">
+      <h2 id="sheet-h">People</h2>
+      <table>
+        <caption class="vh">Fictional directory rows. Select a row to bind Email.</caption>
+        <thead>
+          <tr>
+            <th scope="col">Email</th>
+            <th scope="col">Unit</th>
+          </tr>
+        </thead>
+        <tbody id="rows">
+          <tr tabindex="0" aria-selected="true" data-email="m.chen@example.org">
+            <td>m.chen@example.org</td>
+            <td>University Libraries</td>
+          </tr>
+          <tr tabindex="0" aria-selected="false" data-email="j.ng@example.org">
+            <td>j.ng@example.org</td>
+            <td>Faculty of Science</td>
+          </tr>
+          <tr tabindex="0" aria-selected="false" data-email="a.rossi@example.org">
+            <td>a.rossi@example.org</td>
+            <td>Faculty of Arts</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+    <section class="chat" aria-labelledby="chat-h">
+      <div class="chat-log">
+        <h2 id="chat-h" class="vh">Chat</h2>
+        <p class="msg">Look up the selected email.</p>
+        <article class="card">
+          <h3>preview_sql</h3>
+          <p class="meta">people · bind <code id="bind">{{Email}} = m.chen@example.org</code></p>
+          <pre id="sql">SELECT email, unit FROM people WHERE email = {{Email}}</pre>
+          <table>
+            <thead>
+              <tr><th scope="col">email</th><th scope="col">unit</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td id="out-email">m.chen@example.org</td>
+                <td id="out-unit">University Libraries</td>
+              </tr>
+            </tbody>
+          </table>
+          <p class="actions">
+            <button type="button" disabled title="Needs the docker sidecar">Run</button>
+            <button type="button" disabled title="Needs the docker sidecar">Save</button>
+            <button type="button" class="ok" disabled title="Needs the docker sidecar">Write</button>
+          </p>
+        </article>
+      </div>
+      <div class="prompt">
+        <p>Message · static demo</p>
+      </div>
+    </section>
+  </div>
+  <script>
+    // ponytail: fixture only; docker compose if you want models and writes
+    var units = {
+      "m.chen@example.org": "University Libraries",
+      "j.ng@example.org": "Faculty of Science",
+      "a.rossi@example.org": "Faculty of Arts"
+    };
+    var rows = document.getElementById("rows");
+    function pick(tr) {
+      rows.querySelectorAll("tr").forEach(function (r) { r.setAttribute("aria-selected", "false"); });
+      tr.setAttribute("aria-selected", "true");
+      var email = tr.getAttribute("data-email");
+      document.getElementById("bind").textContent = "{{Email}} = " + email;
+      document.getElementById("out-email").textContent = email;
+      document.getElementById("out-unit").textContent = units[email];
+    }
+    rows.addEventListener("click", function (e) {
+      var tr = e.target.closest("tr");
+      if (tr) pick(tr);
+    });
+    rows.addEventListener("keydown", function (e) {
+      if (e.key !== "Enter" && e.key !== " ") return;
+      var tr = e.target.closest("tr");
+      if (!tr) return;
+      e.preventDefault();
+      pick(tr);
+    });
+  </script>
+</body>
+</html>
